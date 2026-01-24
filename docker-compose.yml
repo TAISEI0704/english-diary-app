@@ -1,0 +1,68 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    container_name: english-diary-postgres
+    restart: unless-stopped
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - english-diary-network
+
+  frankenphp-laravel:
+    build:
+      context: ./docker/frankenphp
+      dockerfile: Dockerfile
+      args:
+        USER_ID: ${USER_ID:-1000}
+        GROUP_ID: ${GROUP_ID:-1000}
+    container_name: english-diary-frankenphp
+    restart: unless-stopped
+    user: "${USER_ID:-1000}:${GROUP_ID:-1000}"
+    ports:
+      - "8000:8000"
+      - "2019:2019"
+    volumes:
+      - ./backend:/app
+    environment:
+      - DB_CONNECTION=pgsql
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - XDG_DATA_HOME=/home/appuser/.local/share
+      - XDG_CONFIG_HOME=/home/appuser/.config
+    networks:
+      - english-diary-network
+    depends_on:
+      - postgres
+
+  react-dev:
+    image: node:20-alpine
+    container_name: english-diary-react
+    restart: unless-stopped
+    working_dir: /app
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - react_node_modules:/app/node_modules
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    networks:
+      - english-diary-network
+
+networks:
+  english-diary-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  react_node_modules:

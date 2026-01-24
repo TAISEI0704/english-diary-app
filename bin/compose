@@ -1,0 +1,228 @@
+#!/bin/bash
+
+# English Diary App - Docker Compose wrapper script
+# Usage: bin/compose <command> [options]
+
+BASE_DIR="$(dirname "$0")/.."
+cd "$BASE_DIR" || exit 1
+
+COMMAND=$1
+shift 1
+
+case $COMMAND in
+    # Docker基本操作
+    "up" )
+        docker compose up -d "$@" --wait ;;
+
+    "stop" )
+        docker compose stop "$@" ;;
+
+    "down" )
+        docker compose down ;;
+
+    "restart" )
+        docker compose restart "$@" ;;
+
+    "build" )
+        docker compose build --no-cache --force-rm "$@" ;;
+
+    "rebuild" )
+        docker compose down && docker compose build --no-cache --force-rm "$@" && docker compose up -d --wait ;;
+
+    "destroy" )
+        echo "⚠️  Warning: This will remove all containers, images, and volumes!"
+        read -p "Are you sure? (y/N): " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            docker compose down --rmi all --volumes --remove-orphans
+        fi ;;
+
+    "ps" )
+        docker compose ps "$@" ;;
+
+    "logs" )
+        docker compose logs -f "$@" ;;
+
+    "exec" )
+        docker compose exec "$@" ;;
+
+    # Laravel コマンド
+    "artisan" )
+        docker compose exec frankenphp-laravel php artisan "$@" ;;
+
+    "tinker" )
+        docker compose exec frankenphp-laravel php artisan tinker ;;
+
+    "migrate" )
+        docker compose exec frankenphp-laravel php artisan migrate "$@" ;;
+
+    "fresh" )
+        docker compose exec frankenphp-laravel php artisan migrate:fresh --seed ;;
+
+    "rollback" )
+        docker compose exec frankenphp-laravel php artisan migrate:rollback "$@" ;;
+
+    "seed" )
+        docker compose exec frankenphp-laravel php artisan db:seed "$@" ;;
+
+    "route" )
+        docker compose exec frankenphp-laravel php artisan route:list "$@" ;;
+
+    "test" )
+        docker compose exec frankenphp-laravel php artisan test "$@" ;;
+
+    "pint" )
+        docker compose exec frankenphp-laravel ./vendor/bin/pint "$@" ;;
+
+    # Composer コマンド
+    "composer" )
+        docker compose exec frankenphp-laravel sudo composer "$@" ;;
+
+    "install" )
+        docker compose exec frankenphp-laravel sudo composer install "$@" ;;
+
+    "require" )
+        docker compose exec frankenphp-laravel sudo composer require "$@" ;;
+
+    "update" )
+        docker compose exec frankenphp-laravel sudo composer update "$@" ;;
+
+    # React/npm コマンド
+    "npm" )
+        docker compose exec react-dev npm "$@" ;;
+
+    "npm:install" )
+        docker compose exec react-dev npm install "$@" ;;
+
+    "npm:dev" )
+        docker compose exec react-dev npm run dev ;;
+
+    "npm:build" )
+        docker compose exec react-dev npm run build ;;
+
+    "npm:lint" )
+        docker compose exec react-dev npm run lint "$@" ;;
+
+    # PostgreSQL コマンド
+    "psql" )
+        docker compose exec postgres psql -U diary_user -d english_diary "$@" ;;
+
+    "db:dump" )
+        docker compose exec postgres pg_dump -U diary_user english_diary > "backup_$(date +%Y%m%d_%H%M%S).sql"
+        echo "✅ Database backup created: backup_$(date +%Y%m%d_%H%M%S).sql" ;;
+
+    "db:restore" )
+        if [ -z "$1" ]; then
+            echo "❌ Error: Please specify backup file"
+            echo "Usage: bin/compose db:restore backup_20240124.sql"
+            exit 1
+        fi
+        cat "$1" | docker compose exec -T postgres psql -U diary_user -d english_diary
+        echo "✅ Database restored from: $1" ;;
+
+    # シェルアクセス
+    "shell:backend" )
+        docker compose exec frankenphp-laravel bash ;;
+
+    "shell:frontend" )
+        docker compose exec react-dev sh ;;
+
+    "shell:db" )
+        docker compose exec postgres bash ;;
+
+    # ユーティリティ
+    "status" )
+        echo "=== Container Status ==="
+        docker compose ps
+        echo ""
+        echo "=== System Resources ==="
+        docker stats --no-stream ;;
+
+    "clean" )
+        echo "🧹 Cleaning Laravel caches..."
+        docker compose exec frankenphp-laravel php artisan cache:clear
+        docker compose exec frankenphp-laravel php artisan config:clear
+        docker compose exec frankenphp-laravel php artisan route:clear
+        docker compose exec frankenphp-laravel php artisan view:clear
+        echo "✅ Caches cleared!" ;;
+
+    "fix:permissions" )
+        echo "🔧 Fixing file permissions..."
+        docker compose exec -u root frankenphp-laravel chown -R appuser:appuser /app/storage /app/bootstrap/cache
+        docker compose exec -u root frankenphp-laravel chmod -R 775 /app/storage /app/bootstrap/cache
+        echo "✅ Permissions fixed!" ;;
+
+    "help" )
+        cat << EOF
+English Diary App - Docker Compose Wrapper
+
+Usage: bin/compose <command> [options]
+
+🐳 Docker Commands:
+  up              Start all containers
+  stop            Stop all containers
+  down            Stop and remove containers
+  restart         Restart containers
+  build           Rebuild images
+  rebuild         Full rebuild (down + build + up)
+  destroy         Remove everything (⚠️  including volumes)
+  ps              Show container status
+  logs            Show and follow logs
+  exec            Execute command in container
+
+🎯 Laravel Commands:
+  artisan         Run artisan command
+  tinker          Start Tinker REPL
+  migrate         Run migrations
+  fresh           Fresh migrations with seeding
+  rollback        Rollback last migration
+  seed            Run seeders
+  route           Show route list
+  test            Run tests
+  pint            Run code formatter
+
+📦 Composer Commands:
+  composer        Run composer command
+  install         Install dependencies
+  require         Add package
+  update          Update dependencies
+
+⚛️  React/npm Commands:
+  npm             Run npm command
+  npm:install     Install npm packages
+  npm:dev         Start dev server
+  npm:build       Build for production
+  npm:lint        Run linter
+
+🗄️  Database Commands:
+  psql            Access PostgreSQL CLI
+  db:dump         Create database backup
+  db:restore      Restore from backup file
+
+💻 Shell Access:
+  shell:backend   Access Laravel container
+  shell:frontend  Access React container
+  shell:db        Access PostgreSQL container
+
+🛠️  Utilities:
+  status          Show container and resource status
+  clean           Clear all Laravel caches
+  fix:permissions Fix file permissions (WSL2)
+  help            Show this help message
+
+Examples:
+  bin/compose up
+  bin/compose artisan make:model DiaryEntry -m
+  bin/compose migrate
+  bin/compose npm install axios
+  bin/compose logs frankenphp-laravel
+  bin/compose psql
+
+EOF
+        ;;
+
+    * )
+        printf "❌ \e[31m${COMMAND}\e[m: invalid command\n"
+        echo "Run 'bin/compose help' to see available commands"
+        exit 1 ;;
+esac
