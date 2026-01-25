@@ -1,11 +1,20 @@
 import { useState } from "react";
 import { Search, ExternalLink } from "lucide-react";
 import { cn } from "../lib/utils";
+import type { DiaryEntry, WordData, DateString } from "../types/diary";
 
-export function KnowledgeView({ entries, words, onPhraseClick }) {
-  const [activeTab, setActiveTab] = useState("phrases");
+type TabType = 'phrases' | 'words';
+
+interface KnowledgeViewProps {
+  entries: DiaryEntry[];
+  words: WordData[];
+  onPhraseClick: (date: DateString) => void;
+}
+
+export function KnowledgeView({ entries, words, onPhraseClick }: KnowledgeViewProps) {
+  const [activeTab, setActiveTab] = useState<TabType>("phrases");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedWord, setSelectedWord] = useState(null);
+  const [selectedWord, setSelectedWord] = useState<WordData | null>(null);
 
   const filteredPhrases = entries.filter((e) =>
     e.englishPhrase.toLowerCase().includes(searchQuery.toLowerCase())
@@ -15,9 +24,9 @@ export function KnowledgeView({ entries, words, onPhraseClick }) {
     w.word.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const formatDate = (dateStr) => {
-    const [year, month, day] = dateStr.split("-");
-    return `\${parseInt(month)}/\${parseInt(day)}`;
+  const formatDate = (dateStr: DateString): string => {
+    const [, month, day] = dateStr.split("-");
+    return `${parseInt(month)}/${parseInt(day)}`;
   };
 
   return (

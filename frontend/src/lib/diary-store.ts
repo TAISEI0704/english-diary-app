@@ -1,5 +1,7 @@
+import type { DiaryEntry, DiaryEntryInput, WordData, DateString } from "../types/diary";
+
 // Sample data for demonstration
-const sampleEntries = [
+const sampleEntries: DiaryEntry[] = [
   {
     id: "1",
     date: "2026-01-20",
@@ -34,20 +36,20 @@ const sampleEntries = [
   },
 ];
 
-let entries = [...sampleEntries];
+let entries: DiaryEntry[] = [...sampleEntries];
 
-export function getEntries() {
+export function getEntries(): DiaryEntry[] {
   return entries;
 }
 
-export function getEntryByDate(date) {
+export function getEntryByDate(date: DateString): DiaryEntry | undefined {
   return entries.find((e) => e.date === date);
 }
 
-export function saveEntry(entry) {
+export function saveEntry(entry: DiaryEntryInput): DiaryEntry {
   const existing = entries.find((e) => e.date === entry.date);
   if (existing) {
-    const updated = {
+    const updated: DiaryEntry = {
       ...existing,
       ...entry,
       updatedAt: new Date(),
@@ -55,7 +57,7 @@ export function saveEntry(entry) {
     entries = entries.map((e) => (e.id === existing.id ? updated : e));
     return updated;
   }
-  const newEntry = {
+  const newEntry: DiaryEntry = {
     ...entry,
     id: crypto.randomUUID(),
     createdAt: new Date(),
@@ -65,15 +67,15 @@ export function saveEntry(entry) {
   return newEntry;
 }
 
-export function deleteEntry(date) {
+export function deleteEntry(date: DateString): void {
   entries = entries.filter((e) => e.date !== date);
 }
 
-export function getCompletedDates() {
+export function getCompletedDates(): Set<DateString> {
   return new Set(entries.map((e) => e.date));
 }
 
-export function getStreak() {
+export function getStreak(): number {
   const today = new Date();
   const sortedDates = entries
     .map((e) => e.date)
@@ -86,7 +88,7 @@ export function getStreak() {
   let currentDate = new Date(today);
 
   for (let i = 0; i < 365; i++) {
-    const dateStr = currentDate.toISOString().split("T")[0];
+    const dateStr = currentDate.toISOString().split("T")[0] as DateString;
     if (sortedDates.includes(dateStr)) {
       streak++;
     } else if (i > 0) {
@@ -98,13 +100,13 @@ export function getStreak() {
   return streak;
 }
 
-export function getMonthlyCount(year, month) {
-  const monthStr = `\${year}-\${String(month + 1).padStart(2, "0")}`;
+export function getMonthlyCount(year: number, month: number): number {
+  const monthStr = `${year}-${String(month + 1).padStart(2, "0")}`;
   return entries.filter((e) => e.date.startsWith(monthStr)).length;
 }
 
-export function extractWords(phrases) {
-  const wordMap = new Map();
+export function extractWords(): WordData[] {
+  const wordMap = new Map<string, Omit<WordData, 'word'>>();
 
   entries.forEach((entry) => {
     const words = entry.englishPhrase
@@ -134,14 +136,14 @@ export function extractWords(phrases) {
     .sort((a, b) => b.count - a.count);
 }
 
-export function searchPhrases(query) {
+export function searchPhrases(query: string): DiaryEntry[] {
   if (!query.trim()) return entries;
   const lowerQuery = query.toLowerCase();
   return entries.filter((e) => e.englishPhrase.toLowerCase().includes(lowerQuery));
 }
 
-export function searchWords(query) {
-  const words = extractWords([]);
+export function searchWords(query: string): WordData[] {
+  const words = extractWords();
   if (!query.trim()) return words;
   const lowerQuery = query.toLowerCase();
   return words.filter((w) => w.word.includes(lowerQuery));

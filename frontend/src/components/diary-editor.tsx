@@ -1,7 +1,16 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, type ChangeEvent } from "react";
 import { ArrowLeft, Trash2 } from "lucide-react";
+import type { DateString, DiaryEntry } from "../types/diary";
 
-export function DiaryEditor({ date, existingEntry, onSave, onDelete, onBack }) {
+interface DiaryEditorProps {
+  date: DateString;
+  existingEntry?: DiaryEntry;
+  onSave: (content: string, englishPhrase: string) => void;
+  onDelete: () => void;
+  onBack: () => void;
+}
+
+export function DiaryEditor({ date, existingEntry, onSave, onDelete, onBack }: DiaryEditorProps) {
   const [content, setContent] = useState(existingEntry?.content || "");
   const [englishPhrase, setEnglishPhrase] = useState(existingEntry?.englishPhrase || "");
   const [hasChanges, setHasChanges] = useState(false);
@@ -12,24 +21,24 @@ export function DiaryEditor({ date, existingEntry, onSave, onDelete, onBack }) {
     setHasChanges(false);
   }, [existingEntry, date]);
 
-  const handleContentChange = (value) => {
+  const handleContentChange = (value: string): void => {
     setContent(value);
     setHasChanges(true);
   };
 
-  const handlePhraseChange = (value) => {
+  const handlePhraseChange = (value: string): void => {
     setEnglishPhrase(value);
     setHasChanges(true);
   };
 
-  const handleSave = useCallback(() => {
+  const handleSave = useCallback((): void => {
     if (content.trim() || englishPhrase.trim()) {
       onSave(content, englishPhrase);
       setHasChanges(false);
     }
   }, [content, englishPhrase, onSave]);
 
-  const handleBack = () => {
+  const handleBack = (): void => {
     if (hasChanges) {
       if (window.confirm("変更が保存されていません。破棄してもよろしいですか？")) {
         onBack();
@@ -39,17 +48,17 @@ export function DiaryEditor({ date, existingEntry, onSave, onDelete, onBack }) {
     }
   };
 
-  const handleDelete = () => {
+  const handleDelete = (): void => {
     if (window.confirm("この日記を削除しますか？この操作は取り消せません。")) {
       onDelete();
     }
   };
 
-  const formatDate = (dateStr) => {
+  const formatDate = (dateStr: DateString): string => {
     const [year, month, day] = dateStr.split("-");
     const d = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
     const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
-    return `\${year}年\${parseInt(month)}月\${parseInt(day)}日（\${weekdays[d.getDay()]}）`;
+    return `${year}年${parseInt(month)}月${parseInt(day)}日（${weekdays[d.getDay()]}）`;
   };
 
   const canSave = content.trim() || englishPhrase.trim();
@@ -78,7 +87,7 @@ export function DiaryEditor({ date, existingEntry, onSave, onDelete, onBack }) {
             id="diary-content"
             placeholder="今日あったこと、感じたこと..."
             value={content}
-            onChange={(e) => handleContentChange(e.target.value)}
+            onChange={(e: ChangeEvent<HTMLTextAreaElement>) => handleContentChange(e.target.value)}
             className="min-h-[140px] w-full rounded-md border border-border/50 bg-card px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:border-accent resize-none"
           />
         </div>
@@ -91,7 +100,7 @@ export function DiaryEditor({ date, existingEntry, onSave, onDelete, onBack }) {
             id="english-phrase"
             placeholder="Write one English phrase..."
             value={englishPhrase}
-            onChange={(e) => handlePhraseChange(e.target.value)}
+            onChange={(e: ChangeEvent<HTMLTextAreaElement>) => handlePhraseChange(e.target.value)}
             className="min-h-[80px] w-full rounded-md border border-border/50 bg-card px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:border-accent resize-none"
           />
           <p className="text-xs text-muted-foreground/70">

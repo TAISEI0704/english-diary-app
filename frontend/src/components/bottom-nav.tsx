@@ -1,8 +1,14 @@
-import { Calendar, BookOpen } from "lucide-react";
+import { Calendar, BookOpen, type LucideIcon } from "lucide-react";
 import { cn } from "../lib/utils";
+import type { ViewType } from "../types/diary";
 
-export function BottomNav({ currentView, onViewChange }) {
-  const navItems = [
+interface BottomNavProps {
+  currentView: ViewType;
+  onViewChange: (view: ViewType) => void;
+}
+
+export function BottomNav({ currentView, onViewChange }: BottomNavProps) {
+  const navItems: Array<{ view: ViewType; label: string; icon: LucideIcon }> = [
     { view: "calendar", label: "カレンダー", icon: Calendar },
     { view: "knowledge", label: "ナレッジ", icon: BookOpen },
   ];

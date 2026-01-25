@@ -1,7 +1,17 @@
 import { ChevronLeft, ChevronRight, Flame } from "lucide-react";
 import { cn } from "../lib/utils";
+import type { DateString } from "../types/diary";
 
 const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"];
+
+interface CalendarViewProps {
+  currentDate: Date;
+  completedDates: Set<DateString>;
+  streak: number;
+  monthlyCount: number;
+  onDateSelect: (date: DateString) => void;
+  onMonthChange: (date: Date) => void;
+}
 
 export function CalendarView({
   currentDate,
@@ -10,18 +20,18 @@ export function CalendarView({
   monthlyCount,
   onDateSelect,
   onMonthChange,
-}) {
+}: CalendarViewProps) {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
   const today = new Date();
-  const todayStr = today.toISOString().split("T")[0];
+  const todayStr = today.toISOString().split("T")[0] as DateString;
 
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
   const startOffset = firstDay.getDay();
   const daysInMonth = lastDay.getDate();
 
-  const days = [];
+  const days: (number | null)[] = [];
   for (let i = 0; i < startOffset; i++) {
     days.push(null);
   }
@@ -29,26 +39,26 @@ export function CalendarView({
     days.push(i);
   }
 
-  const goToPrevMonth = () => {
+  const goToPrevMonth = (): void => {
     onMonthChange(new Date(year, month - 1, 1));
   };
 
-  const goToNextMonth = () => {
+  const goToNextMonth = (): void => {
     onMonthChange(new Date(year, month + 1, 1));
   };
 
-  const formatDateStr = (day) => {
-    return `\${year}-\${String(month + 1).padStart(2, "0")}-\${String(day).padStart(2, "0")}`;
+  const formatDateStr = (day: number): DateString => {
+    return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}` as DateString;
   };
 
-  const isToday = (day) => formatDateStr(day) === todayStr;
+  const isToday = (day: number): boolean => formatDateStr(day) === todayStr;
 
-  const isFuture = (day) => {
+  const isFuture = (day: number): boolean => {
     const dateStr = formatDateStr(day);
     return dateStr > todayStr;
   };
 
-  const isCompleted = (day) => completedDates.has(formatDateStr(day));
+  const isCompleted = (day: number): boolean => completedDates.has(formatDateStr(day));
 
   return (
     <div className="w-full max-w-md mx-auto">
@@ -102,7 +112,7 @@ export function CalendarView({
       <div className="grid grid-cols-7 gap-1">
         {days.map((day, index) => {
           if (day === null) {
-            return <div key={`empty-\${index}`} className="aspect-square" />;
+            return <div key={`empty-${index}`} className="aspect-square" />;
           }
 
           const dateStr = formatDateStr(day);

@@ -13,12 +13,13 @@ import {
   getMonthlyCount,
   extractWords,
 } from "./lib/diary-store";
+import type { ViewType, DateString } from "./types/diary";
 
 export default function App() {
-  const [currentView, setCurrentView] = useState("calendar");
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState(null);
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [currentView, setCurrentView] = useState<ViewType>("calendar");
+  const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
+  const [selectedDate, setSelectedDate] = useState<DateString | null>(null);
+  const [refreshKey, setRefreshKey] = useState<number>(0);
 
   const entries = useMemo(() => getEntries(), [refreshKey]);
   const completedDates = useMemo(() => getCompletedDates(), [refreshKey]);
@@ -27,23 +28,23 @@ export default function App() {
     () => getMonthlyCount(currentMonth.getFullYear(), currentMonth.getMonth()),
     [currentMonth, refreshKey]
   );
-  const words = useMemo(() => extractWords([]), [refreshKey]);
+  const words = useMemo(() => extractWords(), [refreshKey]);
   const selectedEntry = useMemo(
     () => (selectedDate ? getEntryByDate(selectedDate) : undefined),
     [selectedDate, refreshKey]
   );
 
-  const handleDateSelect = useCallback((date) => {
+  const handleDateSelect = useCallback((date: DateString): void => {
     setSelectedDate(date);
     setCurrentView("diary");
   }, []);
 
-  const handleMonthChange = useCallback((date) => {
+  const handleMonthChange = useCallback((date: Date): void => {
     setCurrentMonth(date);
   }, []);
 
   const handleSave = useCallback(
-    (content, englishPhrase) => {
+    (content: string, englishPhrase: string): void => {
       if (selectedDate) {
         saveEntry({ date: selectedDate, content, englishPhrase });
         setRefreshKey((k) => k + 1);
@@ -53,7 +54,7 @@ export default function App() {
     [selectedDate]
   );
 
-  const handleDelete = useCallback(() => {
+  const handleDelete = useCallback((): void => {
     if (selectedDate) {
       deleteEntry(selectedDate);
       setRefreshKey((k) => k + 1);
@@ -61,19 +62,19 @@ export default function App() {
     }
   }, [selectedDate]);
 
-  const handleBack = useCallback(() => {
+  const handleBack = useCallback((): void => {
     setCurrentView("calendar");
     setSelectedDate(null);
   }, []);
 
-  const handleViewChange = useCallback((view) => {
+  const handleViewChange = useCallback((view: ViewType): void => {
     setCurrentView(view);
     if (view !== "diary") {
       setSelectedDate(null);
     }
   }, []);
 
-  const handlePhraseClick = useCallback((date) => {
+  const handlePhraseClick = useCallback((date: DateString): void => {
     setSelectedDate(date);
     setCurrentView("diary");
   }, []);
