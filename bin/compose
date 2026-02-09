@@ -48,44 +48,44 @@ case $COMMAND in
 
     # Laravel コマンド
     "artisan" )
-        docker compose exec frankenphp-laravel php artisan "$@" ;;
+        docker compose exec web php artisan "$@" ;;
 
     "tinker" )
-        docker compose exec frankenphp-laravel php artisan tinker ;;
+        docker compose exec web php artisan tinker ;;
 
     "migrate" )
-        docker compose exec frankenphp-laravel php artisan migrate "$@" ;;
+        docker compose exec web php artisan migrate "$@" ;;
 
     "fresh" )
-        docker compose exec frankenphp-laravel php artisan migrate:fresh --seed ;;
+        docker compose exec web php artisan migrate:fresh --seed ;;
 
     "rollback" )
-        docker compose exec frankenphp-laravel php artisan migrate:rollback "$@" ;;
+        docker compose exec web php artisan migrate:rollback "$@" ;;
 
     "seed" )
-        docker compose exec frankenphp-laravel php artisan db:seed "$@" ;;
+        docker compose exec web php artisan db:seed "$@" ;;
 
     "route" )
-        docker compose exec frankenphp-laravel php artisan route:list "$@" ;;
+        docker compose exec web php artisan route:list "$@" ;;
 
     "test" )
-        docker compose exec frankenphp-laravel php artisan test "$@" ;;
+        docker compose exec web php artisan test "$@" ;;
 
     "pint" )
-        docker compose exec frankenphp-laravel ./vendor/bin/pint "$@" ;;
+        docker compose exec web ./vendor/bin/pint "$@" ;;
 
     # Composer コマンド
     "composer" )
-        docker compose exec frankenphp-laravel sudo composer "$@" ;;
+        docker compose exec web sudo composer "$@" ;;
 
     "install" )
-        docker compose exec frankenphp-laravel sudo composer install "$@" ;;
+        docker compose exec web sudo composer install "$@" ;;
 
     "require" )
-        docker compose exec frankenphp-laravel sudo composer require "$@" ;;
+        docker compose exec web sudo composer require "$@" ;;
 
     "update" )
-        docker compose exec frankenphp-laravel sudo composer update "$@" ;;
+        docker compose exec web sudo composer update "$@" ;;
 
     # React/npm コマンド
     "npm" )
@@ -122,7 +122,7 @@ case $COMMAND in
 
     # シェルアクセス
     "shell:backend" )
-        docker compose exec frankenphp-laravel bash ;;
+        docker compose exec web bash ;;
 
     "shell:frontend" )
         docker compose exec react-dev sh ;;
@@ -140,16 +140,16 @@ case $COMMAND in
 
     "clean" )
         echo "🧹 Cleaning Laravel caches..."
-        docker compose exec frankenphp-laravel php artisan cache:clear
-        docker compose exec frankenphp-laravel php artisan config:clear
-        docker compose exec frankenphp-laravel php artisan route:clear
-        docker compose exec frankenphp-laravel php artisan view:clear
+        docker compose exec web php artisan cache:clear
+        docker compose exec web php artisan config:clear
+        docker compose exec web php artisan route:clear
+        docker compose exec web php artisan view:clear
         echo "✅ Caches cleared!" ;;
 
     "fix:permissions" )
         echo "🔧 Fixing file permissions..."
-        docker compose exec -u root frankenphp-laravel chown -R appuser:appuser /app/storage /app/bootstrap/cache
-        docker compose exec -u root frankenphp-laravel chmod -R 775 /app/storage /app/bootstrap/cache
+        docker compose exec -u root web chown -R appuser:appuser /app/storage /app/bootstrap/cache
+        docker compose exec -u root web chmod -R 775 /app/storage /app/bootstrap/cache
         echo "✅ Permissions fixed!" ;;
 
     "help" )
@@ -215,7 +215,7 @@ Examples:
   bin/compose artisan make:model DiaryEntry -m
   bin/compose migrate
   bin/compose npm install axios
-  bin/compose logs frankenphp-laravel
+  bin/compose logs web
   bin/compose psql
 
 EOF

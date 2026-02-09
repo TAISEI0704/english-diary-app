@@ -31,7 +31,7 @@ services:
       - ./backend:/app
     environment:
       - DB_CONNECTION=pgsql
-      - DB_HOST=postgres
+      - DB_HOST=db
       - DB_PORT=5432
       - DB_DATABASE=${DB_DATABASE}
       - DB_USERNAME=${DB_USERNAME}
