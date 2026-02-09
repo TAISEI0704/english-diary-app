@@ -115,7 +115,7 @@ docker compose ps
 マイグレーションは Laravel プロジェクト作成時に自動実行されていますが、必要に応じて再実行できます：
 
 ```bash
-docker compose exec frankenphp-laravel php artisan migrate
+docker compose exec web php artisan migrate
 ```
 
 ### 6. 動作確認
@@ -162,7 +162,7 @@ docker compose down
 docker compose logs -f
 
 # 特定のサービスのログ
-docker compose logs -f frankenphp-laravel
+docker compose logs -f web
 docker compose logs -f react-dev
 ```
 

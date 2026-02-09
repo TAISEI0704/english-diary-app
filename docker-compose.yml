@@ -1,5 +1,5 @@
 services:
-  postgres:
+  db:
     image: postgres:18-alpine
     container_name: english-diary-postgres
     restart: unless-stopped
@@ -14,7 +14,7 @@ services:
     networks:
       - english-diary-network
 
-  frankenphp-laravel:
+  web:
     build:
       context: ./docker/frankenphp
       dockerfile: Dockerfile
@@ -41,7 +41,7 @@ services:
     networks:
       - english-diary-network
     depends_on:
-      - postgres
+      - db
 
   react-dev:
     image: node:20-alpine
