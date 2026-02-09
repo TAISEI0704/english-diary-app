@@ -8,6 +8,15 @@
         "@upstash/context7-mcp"
       ],
       "env": {}
+    },
+    "v0": {
+      "command": "npx",
+      "args": [
+        "mcp-remote",
+        "https://mcp.v0.dev",
+        "--header",
+        "Authorization: Bearer v1:team_LdKWKJuzryYNJuzwwsDAzS4A:r8sN6d60mM8UrPmwfj20dyZG"
+      ]
     }
   }
 }
